@@ -34,7 +34,7 @@ contract TimeLock {
     uint minLockTime;       // minimum time for which tokens would be locked, specified in days, formerly _timeToWithdrawFund
 
     modifier timeElapse(address _projectAddress) {
-        require(lockedSince[_projectAddress] + (minLockTime * day) >= now, "time to unlock not complete yet");     // not tested yet
+        require(lockedSince[_projectAddress] + (minLockTime * 1 days) >= block.timestamp, "time to unlock not complete yet");     // not tested yet
         _;
     }
     
@@ -51,11 +51,13 @@ contract TimeLock {
             }   
         }
         require(allowed, "Only keepers or master keeper allowed");
+        _;
     }
     
     // modifier would allow only the master keeper to pass
     modifier onlyMaster() {
-        require(msg.sender == master, "Only master keeper allowed");
+        require(msg.sender == masterKeeper, "Only master keeper allowed");
+        _;
     }
     
     /*
@@ -127,8 +129,8 @@ contract TimeLock {
     }
     
     function changeMaster(address _newMaster) external onlyMaster returns(bool) {
-        require(_keeper != masterKeeper, "");
-        require(_keeper != address(0), "");
+        require(_newMaster != masterKeeper, "");
+        require(_newMaster != address(0), "");
         if(_isKeeper(_newMaster)) {
             masterKeeper = _newMaster;
             return true;
@@ -138,7 +140,7 @@ contract TimeLock {
     }
     
     // private function to check that an address is a keeper
-    function _isKeeper(address _keeper) private returns(bool) {
+    function _isKeeper(address _keeper) private view returns(bool) {
         for(uint8 i = 0; i < keepers.length; i++) {
             if(keepers[i] == _keeper) {
                 return true;
@@ -157,15 +159,15 @@ contract TimeLock {
         success = projectX_Token.transferFrom(msg.sender, address(this), _amount);     // initiate transfer to address of this contract
         if(success) {
             lockedFunds[msg.sender] += _amount;
-            lockedSince[msg.sender] = now;
-            emit FundsLocked();
+            lockedSince[msg.sender] = block.timestamp;
+            emit FundsLocked(msg.sender, _amount);
             return true;
         }
         return false;
     }
     
     // get the amount locked up by a project
-    function getLockedAmount(address _projectAddress) external returns(uint) {
+    function getLockedAmount(address _projectAddress) external view returns(uint) {
         return lockedFunds[_projectAddress];
     }
     
@@ -177,7 +179,7 @@ contract TimeLock {
         success = projectX_Token.transfer(_projectAddress, _amount);
         if(success) {
             lockedFunds[_projectAddress] -= _amount;
-            lockedSince[_projectAddress] = now;
+            lockedSince[_projectAddress] = block.timestamp;
             return true;
         }
         return false;
@@ -275,7 +277,7 @@ contract TimeLock {
     }
     
     // this will prevent ether transfer to this contract, as it isnt meant to hold any ether.
-    receive() public {
+    receive() payable external {
         revert();
     }
 }
