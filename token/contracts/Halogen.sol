@@ -31,9 +31,9 @@ interface ERC20interface{
 
 contract Halogen is ERC20interface{
     
-    bytes32 private _name;
+    string private _name;
     
-    bytes8 private _symbol;
+    string private _symbol;
     
     uint256 private _decimals;
     
@@ -101,11 +101,11 @@ contract Halogen is ERC20interface{
         admin = _newAdmin;
     }
     
-    function name() public view returns(bytes32){
+    function name() public view returns(string memory){
         return _name;
     }
     
-    function symbol() public view returns(bytes8){
+    function symbol() public view returns(string memory){
         return _symbol;
     }
     
