@@ -122,15 +122,15 @@ contract TimeLock {
     // for adding keepers for the contract
     function addKeeper(address _keeper) external onlyMaster {
         require(keepers.length < 3, "Keepers limit exceeded");
-        require(_keeper != masterKeeper, "");
-        require(_keeper != address(0), "");
+        require(_keeper != masterKeeper, "Already a master");
+        require(_keeper != address(0), "Adress cannot be zero address");
         keepers.push(_keeper);
         emit KeeperAdded(_keeper);
     }
     
     function changeMaster(address _newMaster) external onlyMaster returns(bool) {
-        require(_newMaster != masterKeeper, "");
-        require(_newMaster != address(0), "");
+        require(_newMaster != masterKeeper, "Already master");
+        require(_newMaster != address(0), "Address cannot be zero address");
         if(_isKeeper(_newMaster)) {
             masterKeeper = _newMaster;
             return true;
@@ -175,7 +175,7 @@ contract TimeLock {
     // I think we shld remove the _amount argument, and just unlock all funds back to the project address
     function unlockFund(uint _amount, address _projectAddress) external timeElapse(_projectAddress) onlyKeepers returns(bool) {
         bool success;
-        require(_amount <= lockedFunds[_projectAddress]);
+        require(_amount <= lockedFunds[_projectAddress], "Amount exceed value locked");
         success = projectX_Token.transfer(_projectAddress, _amount);
         if(success) {
             lockedFunds[_projectAddress] -= _amount;
