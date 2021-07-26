@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./ProjectXToken.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TimeLock {
     address[] keepers;  // holds addresses of time lock keepers
@@ -26,7 +26,7 @@ contract TimeLock {
     address[] investors;
     address[] advisors;
 
-    ProjectXToken projectX_Token;
+    IERC20 projectX_Token;
 
     uint deployedAt;            // date when the contract was deployed    
     uint timeToWithdrawfund; //declares the variable for fund withdrawal
@@ -93,7 +93,7 @@ contract TimeLock {
         deployedAt = block.timestamp;
         minLockAmount = _minLockAmount;
         minLockTime = _minLockTime;
-        projectX_Token = ProjectXToken(_tokenAddress);
+        projectX_Token = IERC20(_tokenAddress);
         _setInitialStakeHoldersBalance();
         _setInitiallastDistrbution();
     }
@@ -153,7 +153,6 @@ contract TimeLock {
     
    // formely deposit(), changed to reflect projectX_Token deposit by a project
     function lockFund(uint _amount) public returns(bool) { // this function is for depositing 
-        // bank[msg.sender] += msg.value;
         bool success;
         success = projectX_Token.transferFrom(msg.sender, address(this), _amount);     // initiate transfer to address of this contract
         if(success) {

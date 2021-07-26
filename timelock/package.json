@@ -17,5 +17,8 @@
     "ethers": "^5.0.0",
     "hardhat": "^2.5.0",
     "solidity-coverage": "^0.7.16"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.2.0"
   }
 }
